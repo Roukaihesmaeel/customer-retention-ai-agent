@@ -243,3 +243,44 @@ Core system implemented with:
 * RAG knowledge retrieval
 * Conversation memory
 * Gradio interface
+## Demo Results
+
+The system was tested using the IBM Telco Customer Churn dataset and the integrated AI Agent tools.
+
+### Example: Customer 0002-ORFBO
+
+| Component                | Result                                                                                                |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Historical Churn Status  | No                                                                                                    |
+| Rule-Based Risk Score    | 1 — Low Risk                                                                                          |
+| ML Churn Probability     | 14.52%                                                                                                |
+| ML Prediction            | No                                                                                                    |
+| Retention Recommendation | Offer an online security package                                                                      |
+| Recommendation Reason    | Customer does not currently have OnlineSecurity                                                       |
+| Company Policy           | The retention policy supports offering an online security package to customers without OnlineSecurity |
+
+### RAG Retrieval Test
+
+For a policy-related question about customers without OnlineSecurity, the semantic search retrieved the relevant policy as the top result.
+
+**Top retrieved policy:** Policy 2 — Online Security
+
+**Similarity score:** 0.718
+
+### Agent Orchestration Example
+
+For a question combining customer data and company policy, the AI Agent successfully combined information from multiple tools:
+
+```text
+Customer Data
+     +
+Retention Recommendation
+     +
+RAG Company Policy
+     ↓
+Gemini AI Agent
+     ↓
+Grounded Business Response
+```
+
+These results demonstrate the integration of structured data, machine learning, business rules, retrieval-augmented generation, and LLM-based tool orchestration in a single application.
