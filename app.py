@@ -1,4 +1,4 @@
-```python
+
 # =========================================================
 # CUSTOMER RETENTION AI AGENT
 # Streamlit Public Demo
@@ -659,4 +659,3 @@ AGENT_TOOLS = [
 
 
 # ================
-```
