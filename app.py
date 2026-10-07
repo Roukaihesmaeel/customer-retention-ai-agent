@@ -1,4 +1,4 @@
-```python
+
 # =========================================================
 # CUSTOMER RETENTION AI AGENT
 # Streamlit Public Demo
@@ -913,4 +913,3 @@ st.caption(
     "Customer Retention AI Agent | "
     "Python • SQL • Machine Learning • RAG • Gemini • Streamlit"
 )
-```
