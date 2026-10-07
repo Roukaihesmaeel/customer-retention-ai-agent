@@ -1,4 +1,3 @@
-
 # =========================================================
 # CUSTOMER RETENTION AI AGENT
 # Streamlit Public Demo
@@ -6,7 +5,6 @@
 
 import sqlite3
 import pandas as pd
-import numpy as np
 import streamlit as st
 
 from sklearn.compose import ColumnTransformer
@@ -44,6 +42,8 @@ st.write(
     "RAG, and a Gemini AI Agent."
 )
 
+st.markdown("---")
+
 
 # =========================================================
 # DATASET
@@ -59,7 +59,9 @@ DATASET_URL = (
 @st.cache_data
 def load_dataset():
 
-    df = pd.read_csv(DATASET_URL)
+    df = pd.read_csv(
+        DATASET_URL
+    )
 
     df["TotalCharges"] = pd.to_numeric(
         df["TotalCharges"],
@@ -123,7 +125,9 @@ def get_customer_from_db(customer_id):
     return result.iloc[0]
 
 
-def customer_database_lookup(customer_id: str) -> str:
+def customer_database_lookup(
+    customer_id: str
+) -> str:
 
     """
     Retrieve structured customer information
@@ -147,11 +151,13 @@ def customer_database_lookup(customer_id: str) -> str:
 # RULE-BASED RISK ANALYSIS
 # =========================================================
 
-def analyze_churn_risk(customer_id: str) -> str:
+def analyze_churn_risk(
+    customer_id: str
+) -> str:
 
     """
-    Analyze customer churn risk using predefined
-    business rules.
+    Analyze customer churn risk using
+    predefined business rules.
     """
 
     customer = get_customer_from_db(
@@ -290,10 +296,14 @@ def train_ml_pipeline(df):
     return pipeline
 
 
-ml_pipeline = train_ml_pipeline(df)
+ml_pipeline = train_ml_pipeline(
+    df
+)
 
 
-def predict_churn_ml(customer_id: str) -> str:
+def predict_churn_ml(
+    customer_id: str
+) -> str:
 
     """
     Predict customer churn probability using
@@ -528,17 +538,6 @@ def search_company_retention_policy(
     """
     Search the company's retention policy
     knowledge base using semantic search.
-
-    Use this tool for questions about:
-
-    - company retention policy
-    - retention rules
-    - online security offers
-    - technical support offers
-    - month-to-month contracts
-    - high-risk customer prioritization
-    - ML churn probability interpretation
-    - historical churn status interpretation
     """
 
     return search_retention_policy(
@@ -548,7 +547,7 @@ def search_company_retention_policy(
 
 
 # =========================================================
-# GEMINI CONFIGURATION
+# GEMINI SYSTEM INSTRUCTIONS
 # =========================================================
 
 SYSTEM_INSTRUCTIONS = """
@@ -635,7 +634,9 @@ information unless customer tools confirm that the policy applies.
 @st.cache_resource
 def create_gemini_client():
 
-    api_key = st.secrets["GEMINI_API_KEY"]
+    api_key = st.secrets[
+        "GEMINI_API_KEY"
+    ]
 
     return genai.Client(
         api_key=api_key
@@ -644,6 +645,10 @@ def create_gemini_client():
 
 client = create_gemini_client()
 
+
+# =========================================================
+# AGENT TOOLS
+# =========================================================
 
 AGENT_TOOLS = [
     customer_database_lookup,
@@ -655,7 +660,7 @@ AGENT_TOOLS = [
 
 
 # =========================================================
-# GEMINI CHAT SESSION
+# CREATE AGENT CHAT
 # =========================================================
 
 def create_agent_chat():
@@ -763,11 +768,13 @@ with st.sidebar:
             "Agent is analyzing..."
         ):
 
-            answer = (
+            response = (
                 st.session_state.agent_chat
                 .send_message(prompt)
-                .text
             )
+
+            answer = response.text
+
 
         st.session_state.messages.append(
             {
@@ -784,6 +791,10 @@ with st.sidebar:
         )
 
 
+    # =====================================================
+    # CLEAR CONVERSATION
+    # =====================================================
+
     if st.button(
         "🗑️ Clear Conversation"
     ):
@@ -798,7 +809,7 @@ with st.sidebar:
 
 
 # =========================================================
-# CHAT HISTORY DISPLAY
+# DISPLAY CHAT HISTORY
 # =========================================================
 
 for msg in st.session_state.messages:
@@ -816,10 +827,40 @@ for msg in st.session_state.messages:
 # FREE CHAT
 # =========================================================
 
+st.markdown("---")
+
+st.header(
+    "💬 Free Chat"
+)
+
+st.write(
+    "Ask follow-up questions and continue the conversation "
+    "with the Customer Retention AI Agent."
+)
+
+st.caption(
+    f"Selected customer: {customer_id_1}"
+)
+
+if customer_id_2 != "None":
+
+    st.caption(
+        f"Second customer: {customer_id_2}"
+)
+
+
+# =========================================================
+# CHAT INPUT
+# =========================================================
+
 user_message = st.chat_input(
     "Ask a question about the selected customer..."
 )
 
+
+# =========================================================
+# PROCESS USER MESSAGE
+# =========================================================
 
 if user_message:
 
@@ -839,6 +880,10 @@ if user_message:
     )
 
 
+    # -----------------------------------------------------
+    # CUSTOMER CONTEXT
+    # -----------------------------------------------------
+
     customer_text = (
         f"Customer ID 1: {customer_id_1}\n"
     )
@@ -849,6 +894,10 @@ if user_message:
             f"Customer ID 2: {customer_id_2}\n"
         )
 
+
+    # -----------------------------------------------------
+    # LANGUAGE
+    # -----------------------------------------------------
 
     if language == "العربية":
 
@@ -863,6 +912,10 @@ if user_message:
         )
 
 
+    # -----------------------------------------------------
+    # PROMPT
+    # -----------------------------------------------------
+
     prompt = (
         language_instruction
         + "\n\n"
@@ -874,6 +927,10 @@ if user_message:
         + "Do not invent unsupported customer or business information."
     )
 
+
+    # -----------------------------------------------------
+    # AGENT RESPONSE
+    # -----------------------------------------------------
 
     with st.chat_message(
         "assistant"
@@ -894,6 +951,10 @@ if user_message:
             answer
         )
 
+
+    # -----------------------------------------------------
+    # SAVE RESPONSE
+    # -----------------------------------------------------
 
     st.session_state.messages.append(
         {
