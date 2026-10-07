@@ -2,6 +2,15 @@
 
 An AI-powered telecom customer retention system that combines Machine Learning, SQL, rule-based risk analysis, Retrieval-Augmented Generation (RAG), and a Gemini-powered AI Agent.
 
+##  Live Demo
+
+Try the deployed AI Agent:
+
+👉 [Open the Customer Retention AI Agent](https://customer-retention-ai-agent.streamlit.app/)
+
+The live demo allows users to select a telecom customer, analyze churn risk, view ML churn probability, receive retention recommendations, and query company retention policies using RAG.
+
+
 ## Overview
 
 This project demonstrates how an AI Agent can use multiple specialized tools and knowledge sources to analyze telecom customers and support customer retention decisions.
