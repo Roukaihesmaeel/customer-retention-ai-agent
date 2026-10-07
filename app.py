@@ -1,4 +1,3 @@
-
 # =========================================================
 # CUSTOMER RETENTION AI AGENT
 # Streamlit Public Demo
@@ -297,7 +296,9 @@ def train_ml_pipeline(dataframe):
     return pipeline
 
 
-ml_pipeline = train_ml_pipeline(df)
+ml_pipeline = train_ml_pipeline(
+    df
+)
 
 
 def predict_churn_ml(
@@ -658,4 +659,380 @@ AGENT_TOOLS = [
 ]
 
 
-# ================
+# =========================================================
+# CREATE AGENT CHAT
+# =========================================================
+
+def create_agent_chat():
+
+    return client.chats.create(
+        model="gemini-3.5-flash-lite",
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_INSTRUCTIONS,
+            tools=AGENT_TOOLS
+        )
+    )
+
+
+# =========================================================
+# SESSION STATE
+# =========================================================
+
+if "agent_chat" not in st.session_state:
+
+    st.session_state.agent_chat = (
+        create_agent_chat()
+    )
+
+
+if "messages" not in st.session_state:
+
+    st.session_state.messages = []
+
+
+if "customer_id_1" not in st.session_state:
+
+    st.session_state.customer_id_1 = None
+
+
+if "customer_id_2" not in st.session_state:
+
+    st.session_state.customer_id_2 = None
+
+
+# =========================================================
+# CLEAR CONVERSATION
+# =========================================================
+
+def clear_conversation():
+
+    st.session_state.messages = []
+
+    st.session_state.agent_chat = (
+        create_agent_chat()
+    )
+
+    st.session_state.customer_id_1 = None
+
+    st.session_state.customer_id_2 = None
+
+
+# =========================================================
+# SIDEBAR
+# =========================================================
+
+with st.sidebar:
+
+    st.header("👤 Customer Selection")
+
+    language = st.selectbox(
+        "Response Language",
+        [
+            "English",
+            "العربية"
+        ],
+        key="language"
+    )
+
+    customer_options = sorted(
+        df["customerID"].unique()
+    )
+
+    customer_id_1 = st.selectbox(
+        "Select Customer",
+        customer_options,
+        index=None,
+        placeholder="Select a customer...",
+        key="customer_id_1"
+    )
+
+    customer_id_2 = st.selectbox(
+        "Second Customer (optional)",
+        customer_options,
+        index=None,
+        placeholder="Select a second customer...",
+        key="customer_id_2"
+    )
+
+    st.markdown("---")
+
+    st.subheader("⚡ Quick Questions")
+
+    quick_question = st.selectbox(
+        "Choose a question",
+        [
+            "Analyze this customer completely",
+            "Show me the customer information only",
+            "What is the churn risk?",
+            "Why is this customer considered at risk?",
+            "What is the most important risk factor?",
+            "What is the ML churn probability?",
+            "What is the ML prediction?",
+            "Do the rule-based risk and ML prediction agree?",
+            "What retention action do you recommend?",
+            "Why do you recommend this retention action?",
+            "Should we prioritize this customer for retention?",
+            "What does the company retention policy say?",
+            "What policy applies to this customer?",
+            "According to company policy, what should we offer this customer?",
+            "Why is the recommended action supported by company policy?",
+            "What does the policy say about high-risk customers?",
+            "How should ML churn probability be interpreted according to company policy?",
+            "Compare the two customers"
+        ]
+    )
+
+    analyze_clicked = st.button(
+        "🔍 Analyze",
+        use_container_width=True
+    )
+
+    st.button(
+        "🗑️ Clear Conversation",
+        use_container_width=True,
+        on_click=clear_conversation
+    )
+
+
+# =========================================================
+# QUICK ANALYSIS
+# =========================================================
+
+if analyze_clicked:
+
+    if not customer_id_1:
+
+        st.warning(
+            "Please select a customer first."
+        )
+
+    else:
+
+        prompt = (
+            f"Answer in {language}.\n\n"
+            f"Customer ID 1: {customer_id_1}\n"
+        )
+
+        if customer_id_2:
+
+            prompt += (
+                f"Customer ID 2: {customer_id_2}\n"
+            )
+
+        prompt += (
+            f"\nUser request:\n{quick_question}\n\n"
+            "Use the available tools when necessary.\n"
+            "Use only supported information.\n"
+            "Do not invent unsupported information."
+        )
+
+        with st.spinner(
+            "Agent is analyzing..."
+        ):
+
+            response = (
+                st.session_state.agent_chat
+                .send_message(prompt)
+            )
+
+            answer = response.text
+
+        st.session_state.messages.append(
+            {
+                "role": "user",
+                "content": quick_question
+            }
+        )
+
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": answer
+            }
+        )
+
+
+# =========================================================
+# DISPLAY CHAT HISTORY
+# =========================================================
+
+for msg in st.session_state.messages:
+
+    with st.chat_message(
+        msg["role"]
+    ):
+
+        st.markdown(
+            msg["content"]
+        )
+
+
+# =========================================================
+# FREE CHAT
+# =========================================================
+
+st.markdown("---")
+
+st.header(
+    "💬 Free Chat"
+)
+
+st.write(
+    "Ask follow-up questions and continue the conversation "
+    "with the Customer Retention AI Agent."
+)
+
+
+if customer_id_1:
+
+    st.caption(
+        f"Selected customer: {customer_id_1}"
+    )
+
+else:
+
+    st.caption(
+        "No customer selected."
+    )
+
+
+if customer_id_2:
+
+    st.caption(
+        f"Second customer: {customer_id_2}"
+    )
+
+
+# =========================================================
+# CHAT INPUT
+# =========================================================
+
+user_message = st.chat_input(
+    "Ask a question about the selected customer..."
+)
+
+
+# =========================================================
+# PROCESS FREE CHAT
+# =========================================================
+
+if user_message:
+
+    if not customer_id_1:
+
+        st.warning(
+            "Please select a customer before starting the chat."
+        )
+
+    else:
+
+        with st.chat_message(
+            "user"
+        ):
+
+            st.markdown(
+                user_message
+            )
+
+        st.session_state.messages.append(
+            {
+                "role": "user",
+                "content": user_message
+            }
+        )
+
+
+        # -------------------------------------------------
+        # CUSTOMER CONTEXT
+        # -------------------------------------------------
+
+        customer_text = (
+            f"Customer ID 1: {customer_id_1}\n"
+        )
+
+        if customer_id_2:
+
+            customer_text += (
+                f"Customer ID 2: {customer_id_2}\n"
+            )
+
+
+        # -------------------------------------------------
+        # LANGUAGE
+        # -------------------------------------------------
+
+        if language == "العربية":
+
+            language_instruction = (
+                "Answer in Arabic."
+            )
+
+        else:
+
+            language_instruction = (
+                "Answer in English."
+            )
+
+
+        # -------------------------------------------------
+        # PROMPT
+        # -------------------------------------------------
+
+        prompt = (
+            language_instruction
+            + "\n\n"
+            + customer_text
+            + "\n"
+            + f"User question:\n{user_message}\n\n"
+            + "Use the available tools when necessary.\n"
+            + "Use only information supported by the available tools.\n"
+            + "Do not invent unsupported customer or business information."
+        )
+
+
+        # -------------------------------------------------
+        # AGENT RESPONSE
+        # -------------------------------------------------
+
+        with st.chat_message(
+            "assistant"
+        ):
+
+            with st.spinner(
+                "Agent is thinking..."
+            ):
+
+                response = (
+                    st.session_state.agent_chat
+                    .send_message(prompt)
+                )
+
+                answer = response.text
+
+            st.markdown(
+                answer
+            )
+
+
+        # -------------------------------------------------
+        # SAVE RESPONSE
+        # -------------------------------------------------
+
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": answer
+            }
+        )
+
+
+# =========================================================
+# FOOTER
+# =========================================================
+
+st.markdown("---")
+
+st.caption(
+    "Customer Retention AI Agent | "
+    "Python • SQL • Machine Learning • RAG • Gemini • Streamlit"
+)
